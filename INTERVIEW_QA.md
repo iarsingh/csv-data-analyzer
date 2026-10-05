@@ -13,12 +13,13 @@ I would demonstrate the linked implementation or examples and distinguish that e
 ## 2. How is this repository organized?
 
 - [`src/csvtool/main.py`](src/csvtool/main.py): Implementation or supporting configuration.
+- [`src/csvtool/ops.py`](src/csvtool/ops.py): Implementation or supporting configuration.
 - [`src/csvtool/analyze.py`](src/csvtool/analyze.py): Implementation or supporting configuration.
 - [`requirements.txt`](requirements.txt): Implementation or supporting configuration.
 - [`src/csvtool/__init__.py`](src/csvtool/__init__.py): Implementation or supporting configuration.
-- [`tests/test_analyze.py`](tests/test_analyze.py): Executable checks and regression examples.
-- [`.github/workflows/ci.yml`](.github/workflows/ci.yml): GitHub Actions job definitions.
-- [`README.md`](README.md): Project explanations or operating notes.
+- [`Dockerfile`](Dockerfile): Container build/service configuration.
+- [`Makefile`](Makefile): Implementation or supporting configuration.
+- [`docker-compose.yml`](docker-compose.yml): Container build/service configuration.
 
 [PROJECT_ARCHITECTURE.md](PROJECT_ARCHITECTURE.md) contains the component diagram and the implementation walkthrough.
 
@@ -73,7 +74,7 @@ Explicit failure paths include:
 - `CsvError('operation must be sum, mean, count, min, or max')` in [`src/csvtool/analyze.py`](src/csvtool/analyze.py#L110).
 - `CsvError(f'CSV has more than {MAX_ROWS} rows')` in [`src/csvtool/analyze.py`](src/csvtool/analyze.py#L33).
 - `CsvError(f'column {column} is not in the CSV')` in [`src/csvtool/analyze.py`](src/csvtool/analyze.py#L108).
-- `HTTPException(status_code=422, detail=str(exc))` in [`src/csvtool/main.py`](src/csvtool/main.py#L24).
+- `HTTPException(status_code=422, detail=str(exc))` in [`src/csvtool/main.py`](src/csvtool/main.py#L26).
 
 I would test both the condition that reaches each exception and the caller that translates it. An explicit raise does not mean every malformed input or dependency failure is handled.
 
@@ -93,15 +94,20 @@ This is a concrete regression example from the repository. Its assertions establ
 
 ## 7. What HTTP interface does the code expose?
 
-- `GET /healthz` → `healthz` in [`src/csvtool/main.py`](src/csvtool/main.py#L28).
-- `POST /analyze` → `post_analyze` in [`src/csvtool/main.py`](src/csvtool/main.py#L33).
-- `POST /group` → `post_group` in [`src/csvtool/main.py`](src/csvtool/main.py#L38).
+- `GET /healthz` → `healthz` in [`src/csvtool/main.py`](src/csvtool/main.py#L30).
+- `POST /analyze` → `post_analyze` in [`src/csvtool/main.py`](src/csvtool/main.py#L35).
+- `POST /group` → `post_group` in [`src/csvtool/main.py`](src/csvtool/main.py#L40).
+- `GET /readyz` → `readyz` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L44).
+- `POST /workspaces` → `create_workspace` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L49).
+- `GET /workspaces` → `list_workspaces` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L66).
+- `POST /workspaces/{workspace_id}/jobs` → `create_job` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L73).
+- `GET /jobs/{job_id}` → `get_job` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L96).
 
 These are literal decorators. Application/router prefixes, authentication, and middleware must be checked in the corresponding setup code.
 
 ## 8. Where does state live, and what happens with multiple workers?
 
-Module-level containers include `BOOLEANS` in [`src/csvtool/analyze.py`](src/csvtool/analyze.py).
+Module-level containers include `BOOLEANS` in [`src/csvtool/analyze.py`](src/csvtool/analyze.py); `_WORKSPACES`, `_JOBS`, `_AUDIT`, `_METRICS` in [`src/csvtool/ops.py`](src/csvtool/ops.py).
 
 These containers belong to a Python process. Inspect which are constant fixtures and which are mutated. Mutable process state needs an explicit shared-storage or synchronization strategy before multiple workers can provide consistent behavior.
 
@@ -152,3 +158,9 @@ The implementation in [`src/csvtool/analyze.py`](src/csvtool/analyze.py#L104) br
 - `operation == 'min'`
 
 A useful extension is a table-driven test that covers each condition just below, at, and above its boundary where applicable. These expressions are the current rules; changing them changes behavior and should be justified by the project’s acceptance criteria.
+
+## 14. What does the operations plane add, and where is its limit?
+
+[`src/csvtool/ops.py`](src/csvtool/ops.py) declares `GET /readyz`, `POST /workspaces`, `GET /workspaces`, `POST /workspaces/{workspace_id}/jobs`, `GET /jobs/{job_id}`, `POST /jobs/{job_id}/approve`, `GET /audit`, `GET /metrics`. Inspect the application’s `include_router` call for its URL prefix.
+
+Its state containers are `_WORKSPACES`, `_JOBS`, `_AUDIT`, `_METRICS`. The job-approval handler defines whether a target is accepted or refused; check that branch and the associated tests instead of treating a recorded job as a successful infrastructure apply.
