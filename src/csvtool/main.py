@@ -1,9 +1,11 @@
+from csvtool.ops import router as ops_router
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from csvtool.analyze import CsvError, analyze, group_by
 
 app = FastAPI()
+app.include_router(ops_router, prefix="/v1")
 
 
 class CsvBody(BaseModel):

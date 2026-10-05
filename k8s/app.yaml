@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csv-data-analyzer
+  labels:
+    app: csv-data-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csv-data-analyzer
+  template:
+    metadata:
+      labels:
+        app: csv-data-analyzer
+    spec:
+      containers:
+        - name: api
+          image: csv-data-analyzer:local
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /v1/readyz
+              port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: csv-data-analyzer
+spec:
+  selector:
+    app: csv-data-analyzer
+  ports:
+    - port: 80
+      targetPort: 8080
