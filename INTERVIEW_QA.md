@@ -97,11 +97,11 @@ This is a concrete regression example from the repository. Its assertions establ
 - `GET /healthz` → `healthz` in [`src/csvtool/main.py`](src/csvtool/main.py#L30).
 - `POST /analyze` → `post_analyze` in [`src/csvtool/main.py`](src/csvtool/main.py#L35).
 - `POST /group` → `post_group` in [`src/csvtool/main.py`](src/csvtool/main.py#L40).
-- `GET /readyz` → `readyz` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L44).
-- `POST /workspaces` → `create_workspace` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L49).
-- `GET /workspaces` → `list_workspaces` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L66).
-- `POST /workspaces/{workspace_id}/jobs` → `create_job` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L73).
-- `GET /jobs/{job_id}` → `get_job` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L96).
+- `GET /readyz` → `readyz` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L74).
+- `POST /workspaces` → `create_workspace` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L80).
+- `GET /workspaces` → `list_workspaces` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L98).
+- `POST /workspaces/{workspace_id}/jobs` → `create_job` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L106).
+- `GET /jobs/{job_id}` → `get_job` in [`src/csvtool/ops.py`](src/csvtool/ops.py#L130).
 
 These are literal decorators. Application/router prefixes, authentication, and middleware must be checked in the corresponding setup code.
 
