@@ -1,5 +1,12 @@
 # CSV Data Analyzer
 
+## Overview
+
+An API that profiles a pasted CSV. It detects the delimiter (comma, semicolon, tab or pipe), infers each column's type, and returns nulls, distinct counts and either numeric statistics or the most common values, with earliest and latest dates for date columns. `POST /group` aggregates one column by another with sum, mean, count, min or max, skipping and counting blank or non-numeric rows. It refuses empty CSVs, duplicate headers and requests over 100,000 rows.
+
+- **Built with:** Python, uvicorn, pytest, Docker, GitHub Actions
+- **Scope:** Python fundamentals lab with tests; it writes no files and refuses production apply.
+
 <!-- project-guide:start -->
 ## Project guide
 
